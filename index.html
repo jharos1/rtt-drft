@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>جرد الشركات والنشططه   </title>
+    <title>جرد الشركات والانشططه   </title>
     
     <style>
         :root { 
@@ -312,10 +312,10 @@
         }
         let m = document.getElementById("matchResult");
         if (sectionTotals[0] === sectionTotals[1] && sectionTotals[0] !== 0) {
-            m.innerText = "✅ مطابق تماماً (" + sectionTotals[0] + ")";
+            m.innerText = "✅ توب التوب   (" + sectionTotals[0] + ")";
             m.className = "match-indicator is-equal";
         } else {
-            m.innerText = "⚠️ فرق: " + Math.abs(sectionTotals[0] - sectionTotals[1]);
+            m.innerText = "⚠️ فيه فرق كبير: " + Math.abs(sectionTotals[0] - sectionTotals[1]);
             m.className = "match-indicator not-equal";
         }
     }
