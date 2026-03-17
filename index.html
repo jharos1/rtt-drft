@@ -3,195 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الجرد الاحترافي - مع بانر</title>
+    <title>جرد الشركات والنشططه   </title>
     
     <style>
-        /* 1. قسم الألوان الأساسية */
         :root { 
-            --body-bg: #0f172a;
+            --body-bg: #5e5e5eb6;
             --card-bg: #1e293b;
             --main-text: #f1f5f9;
-            --item-name-color: #38bdf8; 
+            --item-name-color: #fcdf06; 
             --accent-purple: #818cf8;
             --danger-red: #ef4444;
             --input-glass: rgba(255, 255, 255, 0.05);
-
-            /* ألوان خاصة بالبانر */
-            --banner-gradient-start: #1a202c; /* لون البداية لتدريج البانر */
-            --banner-gradient-end: #2d3748;   /* لون النهاية لتدريج البانر */
-            --banner-text-color: #e2e8f0;     /* لون نص البانر */
         }
 
         body { 
-            margin: 0; padding: 15px;
+            margin: 0; padding: 20px;
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--body-bg); color: var(--main-text); 
-            line-height: 1.6; touch-action: manipulation;
+            background-color: var(--body-bg); 
+            color: var(--main-text); 
+            line-height: 1.6;
         }
 
-        .container { max-width: 100%; margin: auto; } /* استغلال عرض الشاشة كاملاً */
+        .container { max-width: 1200px; margin: auto; }
 
-        /* 2. تنسيق الأزرار العلوية */
+        /* لوحة التحكم */
         .dashboard-controls {
             background: rgba(56, 189, 248, 0.1);
             border: 1px dashed var(--item-name-color);
-            padding: 15px; border-radius: 15px;
-            margin-bottom: 25px; display: flex;
-            justify-content: center; flex-wrap: wrap; gap: 10px;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn-main {
-            background: var(--card-bg); border: 2px solid var(--item-name-color);
-            color: var(--item-name-color); padding: 8px 15px;
-            border-radius: 10px; cursor: pointer; font-weight: bold;
+            background: var(--card-bg);
+            border: 2px solid var(--item-name-color);
+            color: var(--item-name-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
+        .btn-main:hover { background: var(--item-name-color); color: #000; }
+        .btn-reset-cols { border-color: #f59e0b; color: #f59e0b; }
+        .btn-danger { border-color: var(--danger-red); color: var(--danger-red); }
 
-        /* 3. تنسيق بوكس المطابقة */
         .glass-card { 
-            background: var(--card-bg); border-radius: 20px; padding: 15px; 
-            margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            background: var(--card-bg); 
+            border-radius: 20px; padding: 20px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .smart-comparison {
-            display: flex; gap: 10px;
-            background: rgba(0, 0, 0, 0.3); padding: 15px; 
-            border-radius: 15px; border: 1px solid var(--accent-purple);
+        /* تنسيق الجدول الأساسي (للكمبيوتر) */
+        .table-container { width: 100%; overflow-x: visible; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        
+        th { color: #94a3b8; font-size: 0.9rem; padding: 10px; text-align: center; }
+        td { text-align: center; vertical-align: middle; }
+
+        .num-input { 
+            background: var(--input-glass); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 8px; border-radius: 8px; text-align: center; 
+            width: 80%; max-width: 80px; font-size: 16px; font-weight: 600; outline: none;
         }
-        .summary-side { flex: 1; min-width: 0; }
-        .summary-side h4 { font-size: 0.9rem; color: var(--accent-purple); text-align: center; margin-bottom: 10px; }
-        .summary-item { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 4px 0; }
 
-        /* 4. تنسيق الجدول واستغلال المساحة */
-        .table-container { overflow-x: auto; width: 100%; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 600px; }
-        th { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; }
-
-        /* تعديل مستطيل اسم السلعة (تصغير العرض) */
         .item-input {
             background: rgba(56, 189, 248, 0.07) !important;
             border: 1px solid rgba(56, 189, 248, 0.2) !important;
             color: var(--item-name-color) !important;
-            font-weight: 800 !important;
-            text-align: right !important;
-            
-            width: 100px !important; /* تصغير العرض من هنا */
-            padding: 8px !important;
-            font-size: 14px !important;
+            font-weight: 800 !important; text-align: right !important;
+            width: 90% !important; max-width: none !important;
         }
 
-        /* تنسيق مربعات الأرقام */
-        .num-input { 
-            background: var(--input-glass); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; padding: 8px 5px; border-radius: 8px; 
-            text-align: center; width: 60px; font-size: 16px; font-weight: 600;
+        /* ملخص المطابقة */
+        .smart-comparison {
+            display: flex; gap: 20px;
+            background: rgba(0, 0, 0, 0.3); padding: 20px; 
+            border-radius: 15px; border: 1px solid var(--accent-purple);
         }
+        .summary-side { flex: 1; }
+        .summary-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .col-sum-highlight {
-            font-size: 1.1rem !important; font-weight: 900 !important; color: #fff !important;
-            background: rgba(56, 189, 248, 0.1); padding: 5px; border-radius: 8px;
+            font-size: 1.2rem; font-weight: 900; color: #fff;
+            background: rgba(56, 189, 248, 0.1); padding: 5px 10px; border-radius: 8px;
         }
 
-        .row-total { font-size: 1rem; font-weight: bold; color: var(--accent-purple); }
-        .goal-group { background: rgba(0,0,0,0.2); padding: 5px; border-radius: 10px; font-size: 0.8rem; }
-        .btn-s { background: #334155; border: none; color: white; width: 22px; height: 22px; border-radius: 5px; cursor: pointer; }
+        .goal-group { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; }
+        .btn-s { background: #334155; border: none; color: white; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; margin: 0 5px; }
 
         .match-indicator { 
-            text-align: center; padding: 15px; border-radius: 15px; margin-top: 15px;
-            font-weight: bold; font-size: 1.1rem;
+            text-align: center; padding: 20px; border-radius: 15px; margin-top: 20px;
+            font-weight: bold; font-size: 1.3rem;
         }
         .is-equal { background: linear-gradient(to right, #065f46, #059669); color: white; }
         .not-equal { background: #450a0a; border: 1px solid var(--danger-red); color: #f87171; }
 
-        /* 5. تنسيق البانر الاحترافي الجديد */
-        .professional-banner {
-            background: linear-gradient(135deg, var(--banner-gradient-start) 0%, var(--banner-gradient-end) 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-            color: var(--banner-text-color);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            border: 1px solid rgba(255,255,255,0.08);
-            position: relative;
-            overflow: hidden; /* لإخفاء أي جزء زائد من العناصر الداخلية */
-        }
-
-        .professional-banner::before {
-            content: '';
-            position: absolute;
-            top: -20px; left: -20px; right: -20px; bottom: -20px;
-            background: radial-gradient(circle at top left, rgba(56,189,248,0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .banner-icon {
-            font-size: 3rem; /* حجم الأيقونة */
-            color: var(--item-name-color); /* لون الأيقونة */
-            line-height: 1;
-            z-index: 1; /* للتأكد من أنها تظهر فوق التأثيرات */
-        }
-
-        .banner-content {
-            z-index: 1;
-        }
-
-        .banner-content h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.6rem;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .banner-content p {
-            margin: 0;
-            font-size: 0.95rem;
-            opacity: 0.8;
+        /* =========================================
+           تعديلات خاصة للجوال فقط (عرض أقل من 768px)
+           ========================================= */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .dashboard-controls { display: grid; grid-template-columns: 1fr 1fr; }
+            .btn-danger { grid-column: span 2; }
+            
+            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 600px; } /* يمنع انضغاط الجدول ويجبره على التمرير */
+            
+            /* تثبيت العمود الأول في الجوال فقط */
+            td:first-child, th:first-child {
+                position: sticky; right: 0; background: var(--card-bg); z-index: 5;
+                border-left: 2px solid rgba(56, 189, 248, 0.3);
+            }
+            
+            .num-input { width: 60px; }
+            .item-input { width: 120px !important; }
         }
     </style>
-    </head>
+</head>
 <body>
 
 <div class="container">
-    <header style="text-align: center; margin-bottom: 15px;">
-        <h2 style="color: var(--item-name-color); margin: 10px 0;">نظام الجرد الاحترافي</h2>
+    <header style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: var(--item-name-color);">جرد اعدداد الشركات والانشطه  </h1>
     </header>
 
-    <div class="professional-banner">
-        <span class="banner-icon">📊</span> <div class="banner-content">
-            <h3>إدارة المخزون بذكاء</h3>
-            <p>تبسيط عمليات الجرد والمطابقة لتحقيق دقة 100% في مستودعاتك.</p>
-        </div>
-    </div>
     <div class="dashboard-controls">
-        <button class="btn-main" onclick="addNewColumn()">📊 عمود جديد</button>
+        <button class="btn-main" onclick="addNewColumn()">📊 إضافة عمود</button>
         <button class="btn-main" onclick="addNewRow(1)">➕ صف علوي</button>
         <button class="btn-main" onclick="addNewRow(2)">➕ صف سفلي</button>
-        <button class="btn-main btn-reset-cols" onclick="location.reload()">🔄 إعادة ضبط</button>
-        <button class="btn-main" style="border-color: var(--danger-red); color: var(--danger-red);" onclick="resetAllNumbers()">🧹 تصفير</button>
+        <button class="btn-main btn-reset-cols" onclick="resetColumnsToDefault()">🔄 إعادة ضبط</button>
+        <button class="btn-main btn-danger" onclick="resetAllNumbers()">🧹 تصفير الأرقام</button>
     </div>
 
     <div class="glass-card">
-        <h3>📊 المطابقة</h3>
         <div class="smart-comparison">
             <div class="summary-side">
-                <h4>العلوي</h4>
+                <h4 style="color: var(--accent-purple); text-align: center;">الشركات </h4>
                 <div id="sumList1"></div>
-                <div style="margin-top:8px; border-top:1px solid #334155; padding-top:8px; display:flex; justify-content:space-between;">
-                    <span>إجمالي:</span> <b id="totalDisplay1">0</b>
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #444; display:flex; justify-content:space-between;">
+                    <span>الإجمالي الكلي:</span> <b id="totalDisplay1" style="font-size: 1.4rem;">0</b>
                 </div>
             </div>
-            <div style="width:1px; background:rgba(129,140,248,0.2);"></div>
+            <div style="width:2px; background:rgba(129,140,248,0.2);"></div>
             <div class="summary-side">
-                <h4>السفلي</h4>
+                <h4 style="color: var(--accent-purple); text-align: center;"> النشاط</h4>
                 <div id="sumList2"></div>
-                <div style="margin-top:8px; border-top:1px solid #334155; padding-top:8px; display:flex; justify-content:space-between;">
-                    <span>إجمالي:</span> <b id="totalDisplay2">0</b>
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #444; display:flex; justify-content:space-between;">
+                    <span>الإجمالي الكلي:</span> <b id="totalDisplay2" style="font-size: 1.4rem;">0</b>
                 </div>
             </div>
         </div>
@@ -199,24 +165,24 @@
     </div>
 
     <div class="glass-card">
-        <h3 style="color:var(--item-name-color);">📦 القسم العلوي</h3>
+        <h3 style="color:var(--item-name-color);">اعداد الشركات</h3>
         <div class="table-container">
             <table id="table1">
                 <thead id="thead1">
-                    <tr><th style="width: 110px; text-align: right;">السلعة</th><th>م1</th><th>م2</th><th>م3</th><th>م4</th><th>المجموع</th></tr>
+                    <tr><th style="text-align: right; width: 25%;">اسم الشركة </th><th>م1</th><th>م2</th><th>م3</th><th>م4</th><th>المجموع</th></tr>
                 </thead>
                 <tbody id="tbody1"></tbody>
                 <tfoot id="tfoot1">
                     <tr id="sumRow1" style="color: var(--item-name-color); font-weight: bold;">
-                        <td style="text-align:right;">المجموع</td>
+                        <td style="text-align:right;">مجموع الأعمدة</td>
                         <td id="s1-1" class="col-sum-highlight">0</td><td id="s1-2" class="col-sum-highlight">0</td><td id="s1-3" class="col-sum-highlight">0</td><td id="s1-4" class="col-sum-highlight">0</td><td>-</td>
                     </tr>
                     <tr id="goalRow1">
-                        <td style="text-align:right; color:#94a3b8; font-size:0.7rem;">المتبقي</td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(1,1,-1)">-</button> <span id="gv1-1">40</span> <button class="btn-s" onclick="updateGoal(1,1,1)">+</button></div><span id="r1-1">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(1,2,-1)">-</button> <span id="gv1-2">40</span> <button class="btn-s" onclick="updateGoal(1,2,1)">+</button></div><span id="r1-2">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(1,3,-1)">-</button> <span id="gv1-3">40</span> <button class="btn-s" onclick="updateGoal(1,3,1)">+</button></div><span id="r1-3">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(1,4,-1)">-</button> <span id="gv1-4">40</span> <button class="btn-s" onclick="updateGoal(1,4,1)">+</button></div><span id="r1-4">40</span></div></td>
+                        <td style="text-align:right; color:#94a3b8;">المتبقي من الهدف</td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(1,1,-1)">-</button><span id="gv1-1">40</span><button class="btn-s" onclick="updateGoal(1,1,1)">+</button><br><span id="r1-1" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(1,2,-1)">-</button><span id="gv1-2">40</span><button class="btn-s" onclick="updateGoal(1,2,1)">+</button><br><span id="r1-2" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(1,3,-1)">-</button><span id="gv1-3">40</span><button class="btn-s" onclick="updateGoal(1,3,1)">+</button><br><span id="r1-3" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(1,4,-1)">-</button><span id="gv1-4">40</span><button class="btn-s" onclick="updateGoal(1,4,1)">+</button><br><span id="r1-4" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
                         <td>-</td>
                     </tr>
                 </tfoot>
@@ -225,24 +191,24 @@
     </div>
 
     <div class="glass-card">
-        <h3 style="color:var(--item-name-color);">📦 القسم السفلي</h3>
+        <h3 style="color:var(--item-name-color);">اعداد النشاط ..</h3>
         <div class="table-container">
             <table id="table2">
                 <thead id="thead2">
-                    <tr><th style="width: 110px; text-align: right;">السلعة</th><th>م5</th><th>م6</th><th>م7</th><th>م8</th><th>المجموع</th></tr>
+                    <tr><th style="text-align: right; width: 25%;">اسم الشركة </th><th>م5</th><th>م6</th><th>م7</th><th>م8</th><th>المجموع</th></tr>
                 </thead>
                 <tbody id="tbody2"></tbody>
                 <tfoot id="tfoot2">
                     <tr id="sumRow2" style="color: var(--item-name-color); font-weight: bold;">
-                        <td style="text-align:right;">المجموع</td>
+                        <td style="text-align:right;">مجموع الأعمدة</td>
                         <td id="s2-1" class="col-sum-highlight">0</td><td id="s2-2" class="col-sum-highlight">0</td><td id="s2-3" class="col-sum-highlight">0</td><td id="s2-4" class="col-sum-highlight">0</td><td>-</td>
                     </tr>
                     <tr id="goalRow2">
-                        <td style="text-align:right; color:#94a3b8; font-size:0.7rem;">المتبقي</td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(2,1,-1)">-</button> <span id="gv2-1">40</span> <button class="btn-s" onclick="updateGoal(2,1,1)">+</button></div><span id="r2-1">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(2,2,-1)">-</button> <span id="gv2-2">40</span> <button class="btn-s" onclick="updateGoal(2,2,1)">+</button></div><span id="r2-2">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(2,3,-1)">-</button> <span id="gv2-3">40</span> <button class="btn-s" onclick="updateGoal(2,3,1)">+</button></div><span id="r2-3">40</span></div></td>
-                        <td><div class="goal-group"><div><button class="btn-s" onclick="updateGoal(2,4,-1)">-</button> <span id="gv2-4">40</span> <button class="btn-s" onclick="updateGoal(2,4,1)">+</button></div><span id="r2-4">40</span></div></td>
+                        <td style="text-align:right; color:#94a3b8;">المتبقي من الهدف</td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(2,1,-1)">-</button><span id="gv2-1">40</span><button class="btn-s" onclick="updateGoal(2,1,1)">+</button><br><span id="r2-1" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(2,2,-1)">-</button><span id="gv2-2">40</span><button class="btn-s" onclick="updateGoal(2,2,1)">+</button><br><span id="r2-2" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(2,3,-1)">-</button><span id="gv2-3">40</span><button class="btn-s" onclick="updateGoal(2,3,1)">+</button><br><span id="r2-3" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
+                        <td><div class="goal-group"><button class="btn-s" onclick="updateGoal(2,4,-1)">-</button><span id="gv2-4">40</span><button class="btn-s" onclick="updateGoal(2,4,1)">+</button><br><span id="r2-4" style="color:var(--accent-purple); font-weight:bold;">40</span></div></td>
                         <td>-</td>
                     </tr>
                 </tfoot>
@@ -252,116 +218,111 @@
 </div>
 
 <script>
-    // الإعدادات الافتراضية
     let colCount = 4;
-    var defaultItems1 = ["أرز بسمتي", "سكر ناعم"];
-    var defaultItems2 = ["لحم غنم", "دجاج مبرد"];
-    var goalStorage = {"1-1":40,"1-2":40,"1-3":40,"1-4":40,"2-1":40,"2-2":40,"2-3":40,"2-4":40};
+    let goalStorage = {"1-1":40,"1-2":40,"1-3":40,"1-4":40,"2-1":40,"2-2":40,"2-3":40,"2-4":40};
 
-    // 1. وظيفة تحديث الهدف
     function updateGoal(sec, col, amt) {
-        var id = sec + "-" + col;
+        let id = sec + "-" + col;
         goalStorage[id] = Math.max(0, (goalStorage[id] || 0) + amt);
         document.getElementById("gv" + id).innerText = goalStorage[id];
         calculate();
     }
 
-    // 2. وظيفة إضافة صف جديد (مع مستطيل الاسم المصغر)
-    function addNewRow(sec, itemName = "سلعة جديدة") {
-        var tbody = document.getElementById("tbody" + sec);
-        var row = tbody.insertRow();
-        var html = `<td><input type="text" class="item-input" value="${itemName}" oninput="calculate()"></td>`;
+    function addNewRow(sec, itemName = "اضافة اسم شركة") {
+        let tbody = document.getElementById("tbody" + sec);
+        let row = tbody.insertRow();
+        let html = `<td><input type="text" class="num-input item-input" value="${itemName}" oninput="calculate()"></td>`;
         for (let i = 0; i < colCount; i++) {
             html += `<td><input type="number" class="num-input input-val" placeholder="0" oninput="calculate()"></td>`;
         }
-        html += `<td class="row-total">0</td>`;
+        html += `<td style="font-weight:bold; color:var(--accent-purple);">0</td>`;
         row.innerHTML = html;
         calculate();
     }
 
-    // 3. وظيفة إضافة عمود جديد
     function addNewColumn() {
         colCount++;
         for (let s = 1; s <= 2; s++) {
-            var headerRow = document.getElementById("thead" + s).rows[0];
-            var th = document.createElement("th");
+            let headerRow = document.getElementById("thead" + s).rows[0];
+            let th = document.createElement("th");
             th.innerText = "م" + (s === 1 ? colCount : colCount + 4);
             headerRow.insertBefore(th, headerRow.cells[headerRow.cells.length - 1]);
             
-            var rows = document.getElementById("tbody" + s).rows;
+            let rows = document.getElementById("tbody" + s).rows;
             for (let r of rows) {
-                var cell = r.insertCell(r.cells.length - 1);
+                let cell = r.insertCell(r.cells.length - 1);
                 cell.innerHTML = `<input type="number" class="num-input input-val" placeholder="0" oninput="calculate()">`;
             }
 
-            var sumRow = document.getElementById(`sumRow${s}`);
-            var sumTd = sumRow.insertCell(sumRow.cells.length - 1);
+            let sumRow = document.getElementById(`sumRow${s}`);
+            let sumTd = sumRow.insertCell(sumRow.cells.length - 1);
             sumTd.id = `s${s}-${colCount}`;
             sumTd.className = "col-sum-highlight";
             sumTd.innerText = "0";
 
-            var goalRow = document.getElementById(`goalRow${s}`);
-            var goalTd = goalRow.insertCell(goalRow.cells.length - 1);
-            var id = s + "-" + colCount;
+            let goalRow = document.getElementById(`goalRow${s}`);
+            let goalTd = goalRow.insertCell(goalRow.cells.length - 1);
+            let id = s + "-" + colCount;
             goalStorage[id] = 40;
-            goalTd.innerHTML = `<div class="goal-group"><div><button class="btn-s" onclick="updateGoal(${s},${colCount},-1)">-</button> <span id="gv${id}">40</span> <button class="btn-s" onclick="updateGoal(${s},${colCount},1)">+</button></div><span id="r${id}">40</span></div>`;
+            goalTd.innerHTML = `<div class="goal-group"><button class="btn-s" onclick="updateGoal(${s},${colCount},-1)">-</button><span id="gv${id}">40</span><button class="btn-s" onclick="updateGoal(${s},${colCount},1)">+</button><br><span id="r${id}" style="color:var(--accent-purple); font-weight:bold;">40</span></div>`;
         }
         calculate();
     }
 
-    // 4. وظيفة تصفير الأرقام
+    function resetColumnsToDefault() {
+        if (confirm("اعادة ضبط الجدول ")) location.reload();
+    }
+
     function resetAllNumbers() {
-        if (confirm("تصفير جميع الأرقام؟")) {
-            document.querySelectorAll('.input-val').forEach(input => input.value = "");
+        if (confirm("تتصفير اللارقام  ")) {
+            document.querySelectorAll('.input-val').forEach(i => i.value = "");
             calculate();
         }
     }
 
-    // 5. الوظيفة الحسابية الأساسية (كما كانت في كودك الأصلي)
     function calculate() {
-        var sectionTotals = [0, 0];
-        for (var s = 1; s <= 2; s++) {
-            var rows = document.getElementById("tbody" + s).rows;
-            var summary = document.getElementById("sumList" + s);
+        let sectionTotals = [0, 0];
+        for (let s = 1; s <= 2; s++) {
+            let rows = document.getElementById("tbody" + s).rows;
+            let summary = document.getElementById("sumList" + s);
             summary.innerHTML = "";
-            var colSums = Array(colCount).fill(0);
-            var tableTotal = 0;
+            let colSums = Array(colCount).fill(0);
+            let tableTotal = 0;
 
-            for (var i = 0; i < rows.length; i++) {
-                var ins = rows[i].querySelectorAll('input[type="number"]');
-                var nameInput = rows[i].querySelector('.item-input');
-                var name = nameInput.value, rowSum = 0;
-                
-                for (var j = 0; j < ins.length; j++) {
-                    var v = parseFloat(ins[j].value) || 0;
+            for (let i = 0; i < rows.length; i++) {
+                let ins = rows[i].querySelectorAll('input[type="number"]');
+                let name = rows[i].querySelector('.item-input').value;
+                let rowSum = 0;
+                for (let j = 0; j < ins.length; j++) {
+                    let v = parseFloat(ins[j].value) || 0;
                     rowSum += v; colSums[j] += v;
                 }
                 rows[i].cells[colCount + 1].innerText = rowSum;
                 tableTotal += rowSum;
                 if (rowSum > 0) summary.innerHTML += `<div class="summary-item"><span>${name}</span><b>${rowSum}</b></div>`;
             }
-            for (var k = 1; k <= colCount; k++) {
-                var sElem = document.getElementById(`s${s}-${k}`);
-                var rElem = document.getElementById(`r${s}-${k}`);
+            for (let k = 1; k <= colCount; k++) {
+                let sElem = document.getElementById(`s${s}-${k}`);
+                let rElem = document.getElementById(`r${s}-${k}`);
                 if(sElem) sElem.innerText = colSums[k-1];
                 if(rElem) rElem.innerText = (goalStorage[s+"-"+k] || 0) - colSums[k-1];
             }
             document.getElementById("totalDisplay" + s).innerText = tableTotal;
             sectionTotals[s-1] = tableTotal;
         }
-        var m = document.getElementById("matchResult");
+        let m = document.getElementById("matchResult");
         if (sectionTotals[0] === sectionTotals[1] && sectionTotals[0] !== 0) {
-            m.innerText = "✅ مطابق تماماً"; m.className = "match-indicator is-equal";
+            m.innerText = "✅ مطابق تماماً (" + sectionTotals[0] + ")";
+            m.className = "match-indicator is-equal";
         } else {
-            m.innerText = "⚠️ غير مطابق | الفرق: " + Math.abs(sectionTotals[0] - sectionTotals[1]);
+            m.innerText = "⚠️ فرق: " + Math.abs(sectionTotals[0] - sectionTotals[1]);
             m.className = "match-indicator not-equal";
         }
     }
 
-    // تشغيل عند التحميل
     window.onload = function() {
-        defaultItems1.forEach(n => addNewRow(1, n));
-        defaultItems2.forEach(n => addNewRow(2, n));
+        ["YAN", "SAB", "GA", "ST"].forEach(n => addNewRow(1, n));
+        ["جيم", "كوره", "تنس طاولة", "بولينق", "مسبح", "كرة الطائرة"].forEach(n => addNewRow(2, n));
     };
 </script>
 </body>
