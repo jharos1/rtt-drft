@@ -37,8 +37,8 @@
         .month-selection-bar { background: var(--card-bg); padding: 12px; border-radius: 15px; border: 1px solid var(--accent); margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(10px); }
         .month-selection-bar select { background: #1e293b; color: white; border: 1px solid var(--primary); padding: 5px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .btn-main { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; backdrop-filter: blur(10px); font-size: 0.85rem; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .btn-main { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; backdrop-filter: blur(10px); font-size: 0.8rem; }
         
         .all-time-summary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 25px; display: flex; justify-content: space-around; backdrop-filter: blur(5px); flex-wrap: wrap; gap: 10px; }
         .stat-box { text-align: center; flex: 1; min-width: 120px; }
@@ -52,6 +52,7 @@
         
         .summary-side { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; font-size: 0.9rem; }
         .summary-side h4 { color: #ff8c00; margin-bottom: 8px; } 
+        #sumList1 div, #sumList2 div { color: var(--accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .total-badge { font-size: 1.5rem; color: var(--accent); font-weight: bold; }
         
         .table-container { overflow-x: auto; border-radius: 15px; }
@@ -72,10 +73,10 @@
 
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(10px); padding: 10px; }
         .overlay-content { background: #ffffff; width: 100%; max-width: 1000px; padding: 25px; border-radius: 20px; color: #333; max-height: 95vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-        .charts-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        @media (max-width: 768px) { .charts-flex { grid-template-columns: 1fr; } }
-        .chart-box { background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; height: 350px; }
-        .chart-box h4 { text-align: center; color: #1e293b; margin-top: 0; }
+        
+        .archive-day-card { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 10px; color: #333; }
+        .archive-day-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #475569; font-weight: bold; border-bottom: 1px solid #ddd; margin-bottom: 8px; }
+        .archive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -107,8 +108,9 @@
         <button class="btn-main" onclick="addNewRow(1)"><i class="fas fa-building"></i> زيادة شركه</button>
         <button class="btn-main" onclick="addNewRow(2)"><i class="fas fa-tasks"></i> إضافة نشاط</button>
         <button class="btn-main" onclick="resetAllNumbers()"><i class="fas fa-eraser"></i> تصفير الأرقام</button>
-        <button class="btn-main" style="background:var(--success)" onclick="manualSave()"><i class="fas fa-save"></i> حفظ يدوي</button>
-        <button class="btn-main" style="border:1px solid var(--accent)" onclick="openAnalytics()"><i class="fas fa-chart-bar"></i> البار تشارت والارشيف</button>
+        <button class="btn-main" style="background:var(--success)" onclick="saveDailyLog()"><i class="fas fa-save"></i> حفظ جرد اليوم</button>
+        <button class="btn-main" style="background:var(--primary)" onclick="exportData()"><i class="fas fa-mobile-alt"></i> نقل البيانات للجوال</button>
+        <button class="btn-main" style="border:1px solid var(--accent)" onclick="openAnalytics()"><i class="fas fa-chart-bar"></i> السجلات والتحليلات</button>
     </div>
 
     <div class="all-time-summary">
@@ -138,19 +140,25 @@
 <div id="analyticsOverlay" class="full-overlay">
     <div class="overlay-content">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-            <h2 style="color:#1e293b; margin:0;">لوحة التحليلات</h2>
+            <h2 style="color:#1e293b; margin:0;">سجل البيانات والتحليلات</h2>
             <button onclick="closeAnalytics()" style="background:none; border:none; color:#333; font-size:2rem; cursor:pointer;">×</button>
         </div>
-        <div class="charts-flex">
-            <div class="chart-box"><h4>بار تشارت الشركات</h4><canvas id="chartComp"></canvas></div>
-            <div class="chart-box"><h4>بار تشارت الأنشطة</h4><canvas id="chartAct"></canvas></div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+            <div style="background:#f8fafc; padding:10px; border-radius:12px; height:250px;"><canvas id="chartComp"></canvas></div>
+            <div style="background:#f8fafc; padding:10px; border-radius:12px; height:250px;"><canvas id="chartAct"></canvas></div>
         </div>
+
+        <h4 style="color:#1e293b">أرشيف الأيام المحفوظة:</h4>
+        <div id="dailyArchiveList"></div>
+        <button class="btn-main" style="background:var(--danger); width:100%; margin-top:15px; color:white" onclick="clearArchive()">حذف الأرشيف بالكامل</button>
     </div>
 </div>
 
 <script>
     let colCount = 3;
-    let monthlyDB = JSON.parse(localStorage.getItem('jard_v3_db')) || {};
+    let monthlyDB = JSON.parse(localStorage.getItem('jard_v5_db')) || {};
+    let dailyLogs = JSON.parse(localStorage.getItem('jard_daily_logs_v5')) || []; 
     let chartC = null, chartA = null;
 
     window.onload = () => {
@@ -159,11 +167,11 @@
         document.getElementById('activeMonth').value = curMonth;
         loadMonthData();
         setInterval(updateTimer, 1000);
+        // تم استدعاء التحديث التراكمي هنا لضمان عمله عند الفتح
+        updateGrandTotals();
     };
 
-    function switchMonth() {
-        if(confirm("عرض بيانات شهر آخر؟")) loadMonthData();
-    }
+    function switchMonth() { if(confirm("عرض بيانات شهر آخر؟")) loadMonthData(); }
 
     function autoSave() {
         const month = document.getElementById('activeMonth').value;
@@ -173,11 +181,72 @@
             cols: colCount,
             goals: getGoals()
         };
-        localStorage.setItem('jard_v3_db', JSON.stringify(monthlyDB));
+        localStorage.setItem('jard_v5_db', JSON.stringify(monthlyDB));
         updateGrandTotals();
     }
 
-    function manualSave() { autoSave(); alert("تم الحفظ!"); }
+    function updateGrandTotals() {
+        let tc = 0, ta = 0;
+        // نجمع من كل قاعدة البيانات المخزنة
+        Object.keys(monthlyDB).forEach(mKey => {
+            let m = monthlyDB[mKey];
+            if (m.table1) {
+                m.table1.forEach(row => {
+                    row.vals.forEach(v => tc += (parseFloat(v) || 0));
+                });
+            }
+            if (m.table2) {
+                m.table2.forEach(row => {
+                    row.vals.forEach(v => ta += (parseFloat(v) || 0));
+                });
+            }
+        });
+        // تحديث الأرقام في الواجهة
+        const compEl = document.getElementById('grandTotalComp');
+        const actEl = document.getElementById('grandTotalAct');
+        if(compEl) compEl.innerText = tc;
+        if(actEl) actEl.innerText = ta;
+    }
+
+    function saveDailyLog() {
+        if(!confirm("هل تريد حفظ جرد اليوم في السجل التاريخي؟")) return;
+        let cSum = "", aSum = "";
+        [1,2].forEach(s => {
+            document.querySelectorAll(`#tbody${s} tr`).forEach(r => {
+                let n = r.querySelector('.item-input').value;
+                let v = r.cells[r.cells.length-1].innerText;
+                if(n && parseInt(v) > 0) {
+                    if(s===1) cSum += `${n}:${v} | `; else aSum += `${n}:${v} | `;
+                }
+            });
+        });
+        dailyLogs.push({
+            date: new Date().toLocaleDateString('ar-EG'),
+            time: new Date().toLocaleTimeString('ar-EG'),
+            total: document.getElementById('totalDisplay1').innerText,
+            comp: cSum || "فارغ",
+            act: aSum || "فارغ"
+        });
+        localStorage.setItem('jard_daily_logs_v5', JSON.stringify(dailyLogs));
+        autoSave();
+        alert("تم الحفظ في الأرشيف!");
+    }
+
+    function exportData() {
+        let allData = { db: monthlyDB, logs: dailyLogs, ver: "5.0" };
+        let code = btoa(unescape(encodeURIComponent(JSON.stringify(allData))));
+        let input = prompt("انسخ الكود التالي لاستخدامه في الجوال، أو ألصق الكود المستلم هنا للاستيراد:", code);
+        if(input && input !== code) {
+            try {
+                let decoded = JSON.parse(decodeURIComponent(escape(atob(input))));
+                monthlyDB = decoded.db;
+                dailyLogs = decoded.logs;
+                localStorage.setItem('jard_v5_db', JSON.stringify(monthlyDB));
+                localStorage.setItem('jard_daily_logs_v5', JSON.stringify(dailyLogs));
+                location.reload();
+            } catch(e) { alert("الكود غير صحيح!"); }
+        }
+    }
 
     function getSnapshot(sec) {
         return Array.from(document.querySelectorAll(`#tbody${sec} tr`)).map(r => ({
@@ -202,7 +271,6 @@
         const data = monthlyDB[month];
         document.getElementById('tbody1').innerHTML = "";
         document.getElementById('tbody2').innerHTML = "";
-
         if(data) {
             colCount = data.cols;
             rebuildUI(data.goals);
@@ -210,18 +278,16 @@
             data.table2.forEach(r => addNewRow(2, r.name, r.vals));
         } else {
             colCount = 3; rebuildUI(null);
-            ["Y", "S", "G", "T"].forEach(n => addNewRow(1, n));
-            ["d", "B", "dd", "dd", "T", "d", "d"].forEach(n => addNewRow(2, n));
+            ["YA", "SA", "GA", "ST"].forEach(n => addNewRow(1, n));
+            ["GYM", "FB", "BOWLING", "SWIMMING", "T-TENNIS", "PS5", "BILLIARD"].forEach(n => addNewRow(2, n));
         }
         calculate();
-        updateGrandTotals();
     }
 
     function rebuildUI(savedGoals) {
         [1,2].forEach(s => {
             document.getElementById("thead"+s).rows[0].innerHTML = `<th>اسم ${s==1?'الشركة':'النشاط'}</th>` + Array.from({length: colCount}, (_, i) => `<th>م${i+1}</th>`).join('') + `<th>المجموع</th>`;
             document.getElementById("sumRow"+s).innerHTML = `<td style="text-align:right">مجموع الأعمدة</td>` + Array.from({length: colCount}, (_, i) => `<td id="s${s}-${i+1}">0</td>`).join('') + `<td>-</td>`;
-            
             let gr = document.getElementById("goalRow"+s);
             gr.innerHTML = `<td style="text-align:right">المتبقي من الجرد</td>`;
             for(let i=1; i<=colCount; i++) {
@@ -237,7 +303,6 @@
             let colSums = Array(colCount).fill(0);
             let tableTotal = 0;
             let summaryHTML = "";
-
             document.querySelectorAll(`#tbody${s} tr`).forEach(r => {
                 let rSum = 0;
                 r.querySelectorAll('.num-input').forEach((inp, idx) => {
@@ -249,10 +314,8 @@
                 let name = r.querySelector('.item-input').value;
                 if(rSum > 0) summaryHTML += `<div>${name}: ${rSum}</div>`;
             });
-
             document.getElementById("sumList" + s).innerHTML = summaryHTML;
             document.getElementById("totalDisplay" + s).innerText = tableTotal;
-
             for(let i=1; i<=colCount; i++) {
                 let sumCell = document.getElementById(`s${s}-${i}`);
                 if(sumCell) sumCell.innerText = colSums[i-1];
@@ -266,13 +329,13 @@
             }
         });
         checkMatch();
-        autoSave(); // حفظ تلقائي عند أي تغيير
+        autoSave();
     }
 
     function addNewRow(sec, name = "", vals = []) {
         let row = document.getElementById("tbody" + sec).insertRow();
         let html = `<td><input type="text" class="item-input" value="${name}" oninput="calculate()"></td>`;
-        for(let i=0; i<colCount; i++) html += `<td><input type="number" class="num-input" value="${vals[i]||''}" oninput="calculate()"></td>`;
+        for(let i=0; i<colCount; i++) html += `<td><input type="number" class="num-input" value="${vals[i] || ''}" oninput="calculate()"></td>`;
         row.innerHTML = html + `<td class="row-total" style="color:var(--primary); font-weight:bold">0</td>`;
     }
 
@@ -283,23 +346,31 @@
         if(t1 === t2 && t1 > 0) { m.innerText = "✅ متطابق: " + t1; m.className = "status-badge is-equal"; }
         else { m.innerText = "❌ مو متطابق | الفرق: " + Math.abs(t1-t2); m.className = "status-badge not-equal"; }
     }
-    function updateGrandTotals() {
-        let tc = 0, ta = 0;
-        Object.values(monthlyDB).forEach(m => {
-            m.table1.forEach(r => r.vals.forEach(v => tc += parseFloat(v)||0));
-            m.table2.forEach(r => r.vals.forEach(v => ta += parseFloat(v)||0));
-        });
-        document.getElementById('grandTotalComp').innerText = tc;
-        document.getElementById('grandTotalAct').innerText = ta;
-    }
+    
     function resetAllNumbers() { if(confirm("تصفير أرقام الجدول؟")) { document.querySelectorAll('.num-input').forEach(i => i.value = ""); calculate(); } }
-    function openAnalytics() { document.getElementById('analyticsOverlay').style.display='flex'; showChart(); }
+    
+    function openAnalytics() { 
+        document.getElementById('analyticsOverlay').style.display='flex'; 
+        showChart();
+        let list = document.getElementById('dailyArchiveList');
+        list.innerHTML = dailyLogs.length === 0 ? "لا توجد سجلات بعد." : "";
+        [...dailyLogs].reverse().forEach(log => {
+            list.innerHTML += `<div class="archive-day-card">
+                <div class="archive-day-header"><span>📅 ${log.date}</span><span>⏱️ ${log.time}</span></div>
+                <div class="archive-grid"><div><b>شركات:</b><br>${log.comp}</div><div><b>أنشطة:</b><br>${log.act}</div></div>
+                <div style="text-align:center; margin-top:5px; color:var(--primary); font-weight:bold">إجمالي: ${log.total}</div>
+            </div>`;
+        });
+    }
     function closeAnalytics() { document.getElementById('analyticsOverlay').style.display='none'; }
+    function clearArchive() { if(confirm("حذف كل السجلات التاريخية؟")) { dailyLogs=[]; localStorage.setItem('jard_daily_logs_v5','[]'); openAnalytics(); } }
+
     function updateTimer() {
         const now = new Date(); const res = new Date(); res.setHours(23,0,0,0); if(now>res) res.setDate(res.getDate()+1);
         const d = res-now; const h = Math.floor(d/3600000).toString().padStart(2,'0'), m = Math.floor((d%3600000)/60000).toString().padStart(2,'0'), s = Math.floor((d%60000)/1000).toString().padStart(2,'0');
         document.getElementById('resetTimer').innerText = `${h}:${m}:${s}`;
     }
+
     function showChart() {
         const getData = (s) => {
             let l = [], v = [];
