@@ -74,9 +74,10 @@
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(10px); padding: 10px; }
         .overlay-content { background: #ffffff; width: 100%; max-width: 1000px; padding: 25px; border-radius: 20px; color: #333; max-height: 95vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         
-        .archive-day-card { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 10px; color: #333; }
-        .archive-day-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #475569; font-weight: bold; border-bottom: 1px solid #ddd; margin-bottom: 8px; }
+        .archive-day-card { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 10px; color: #333; position: relative; }
+        .archive-day-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #475569; font-weight: bold; border-bottom: 1px solid #ddd; margin-bottom: 8px; padding-left: 35px; }
         .archive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; }
+        .delete-btn { position: absolute; left: 10px; top: 10px; color: var(--danger); cursor: pointer; font-size: 1.1rem; border: none; background: none; z-index: 5; }
     </style>
 </head>
 <body>
@@ -140,7 +141,7 @@
 <div id="analyticsOverlay" class="full-overlay">
     <div class="overlay-content">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-            <h2 style="color:#1e293b; margin:0;">سجل البيانات والتحليلات</h2>
+            <h2 style="color:#1e293b; margin:0;">سجل البيانات والتحليلات (من المحفوظات)</h2>
             <button onclick="closeAnalytics()" style="background:none; border:none; color:#333; font-size:2rem; cursor:pointer;">×</button>
         </div>
         
@@ -167,7 +168,6 @@
         document.getElementById('activeMonth').value = curMonth;
         loadMonthData();
         setInterval(updateTimer, 1000);
-        // تم استدعاء التحديث التراكمي هنا لضمان عمله عند الفتح
         updateGrandTotals();
     };
 
@@ -187,60 +187,74 @@
 
     function updateGrandTotals() {
         let tc = 0, ta = 0;
-        // نجمع من كل قاعدة البيانات المخزنة
         Object.keys(monthlyDB).forEach(mKey => {
             let m = monthlyDB[mKey];
-            if (m.table1) {
-                m.table1.forEach(row => {
-                    row.vals.forEach(v => tc += (parseFloat(v) || 0));
-                });
-            }
-            if (m.table2) {
-                m.table2.forEach(row => {
-                    row.vals.forEach(v => ta += (parseFloat(v) || 0));
-                });
-            }
+            if (m.table1) m.table1.forEach(row => row.vals.forEach(v => tc += (parseFloat(v) || 0)));
+            if (m.table2) m.table2.forEach(row => row.vals.forEach(v => ta += (parseFloat(v) || 0)));
         });
-        // تحديث الأرقام في الواجهة
-        const compEl = document.getElementById('grandTotalComp');
-        const actEl = document.getElementById('grandTotalAct');
-        if(compEl) compEl.innerText = tc;
-        if(actEl) actEl.innerText = ta;
+        document.getElementById('grandTotalComp').innerText = tc;
+        document.getElementById('grandTotalAct').innerText = ta;
     }
 
     function saveDailyLog() {
         if(!confirm("هل تريد حفظ جرد اليوم في السجل التاريخي؟")) return;
-        let cSum = "", aSum = "";
-        [1,2].forEach(s => {
-            document.querySelectorAll(`#tbody${s} tr`).forEach(r => {
-                let n = r.querySelector('.item-input').value;
-                let v = r.cells[r.cells.length-1].innerText;
-                if(n && parseInt(v) > 0) {
-                    if(s===1) cSum += `${n}:${v} | `; else aSum += `${n}:${v} | `;
-                }
-            });
+        
+        let compDetails = [];
+        let actDetails = [];
+        let cText = "", aText = "";
+
+        // جمع بيانات الشركات للتخزين المنظم
+        document.querySelectorAll(`#tbody1 tr`).forEach(r => {
+            let n = r.querySelector('.item-input').value;
+            let v = parseInt(r.cells[r.cells.length-1].innerText) || 0;
+            if(n && v > 0) {
+                compDetails.push({name: n, val: v});
+                cText += `${n}:${v} | `;
+            }
         });
+
+        // جمع بيانات الأنشطة للتخزين المنظم
+        document.querySelectorAll(`#tbody2 tr`).forEach(r => {
+            let n = r.querySelector('.item-input').value;
+            let v = parseInt(r.cells[r.cells.length-1].innerText) || 0;
+            if(n && v > 0) {
+                actDetails.push({name: n, val: v});
+                aText += `${n}:${v} | `;
+            }
+        });
+
         dailyLogs.push({
+            id: Date.now(),
             date: new Date().toLocaleDateString('ar-EG'),
             time: new Date().toLocaleTimeString('ar-EG'),
             total: document.getElementById('totalDisplay1').innerText,
-            comp: cSum || "فارغ",
-            act: aSum || "فارغ"
+            compText: cText || "فارغ",
+            actText: aText || "فارغ",
+            compData: compDetails, // هذا للرسم البياني
+            actData: actDetails   // هذا للرسم البياني
         });
+
         localStorage.setItem('jard_daily_logs_v5', JSON.stringify(dailyLogs));
         autoSave();
-        alert("تم الحفظ في الأرشيف!");
+        alert("تم الحفظ! الرسم البياني سيعتمد على هذا السجل الآن.");
+    }
+
+    function deleteSingleLog(id) {
+        if(confirm("حذف هذا السجل من الأرشيف والرسم البياني؟")) {
+            dailyLogs = dailyLogs.filter(log => log.id !== id);
+            localStorage.setItem('jard_daily_logs_v5', JSON.stringify(dailyLogs));
+            openAnalytics();
+        }
     }
 
     function exportData() {
-        let allData = { db: monthlyDB, logs: dailyLogs, ver: "5.0" };
+        let allData = { db: monthlyDB, logs: dailyLogs };
         let code = btoa(unescape(encodeURIComponent(JSON.stringify(allData))));
-        let input = prompt("انسخ الكود التالي لاستخدامه في الجوال، أو ألصق الكود المستلم هنا للاستيراد:", code);
+        let input = prompt("انسخ الكود للنقل، أو الصق الكود المستلم هنا:", code);
         if(input && input !== code) {
             try {
                 let decoded = JSON.parse(decodeURIComponent(escape(atob(input))));
-                monthlyDB = decoded.db;
-                dailyLogs = decoded.logs;
+                monthlyDB = decoded.db; dailyLogs = decoded.logs;
                 localStorage.setItem('jard_v5_db', JSON.stringify(monthlyDB));
                 localStorage.setItem('jard_daily_logs_v5', JSON.stringify(dailyLogs));
                 location.reload();
@@ -278,7 +292,7 @@
             data.table2.forEach(r => addNewRow(2, r.name, r.vals));
         } else {
             colCount = 3; rebuildUI(null);
-            ["YA", "SA", "GA", "ST"].forEach(n => addNewRow(1, n));
+            ["YA", "SA", "GA", "ST", "visitors"].forEach(n => addNewRow(1, n));
             ["GYM", "FB", "BOWLING", "SWIMMING", "T-TENNIS", "PS5", "BILLIARD"].forEach(n => addNewRow(2, n));
         }
         calculate();
@@ -347,7 +361,7 @@
         else { m.innerText = "❌ مو متطابق | الفرق: " + Math.abs(t1-t2); m.className = "status-badge not-equal"; }
     }
     
-    function resetAllNumbers() { if(confirm("تصفير أرقام الجدول؟")) { document.querySelectorAll('.num-input').forEach(i => i.value = ""); calculate(); } }
+    function resetAllNumbers() { if(confirm("تصفير أرقام الجدول؟ (لن يتأثر الرسم البياني المحفوظ)")) { document.querySelectorAll('.num-input').forEach(i => i.value = ""); calculate(); } }
     
     function openAnalytics() { 
         document.getElementById('analyticsOverlay').style.display='flex'; 
@@ -356,14 +370,15 @@
         list.innerHTML = dailyLogs.length === 0 ? "لا توجد سجلات بعد." : "";
         [...dailyLogs].reverse().forEach(log => {
             list.innerHTML += `<div class="archive-day-card">
+                <button class="delete-btn" onclick="deleteSingleLog(${log.id})"><i class="fas fa-trash"></i></button>
                 <div class="archive-day-header"><span>📅 ${log.date}</span><span>⏱️ ${log.time}</span></div>
-                <div class="archive-grid"><div><b>شركات:</b><br>${log.comp}</div><div><b>أنشطة:</b><br>${log.act}</div></div>
-                <div style="text-align:center; margin-top:5px; color:var(--primary); font-weight:bold">إجمالي: ${log.total}</div>
+                <div class="archive-grid"><div><b>شركات:</b><br>${log.compText || log.comp}</div><div><b>أنشطة:</b><br>${log.actText || log.act}</div></div>
+                <div style="text-align:center; margin-top:5px; color:var(--primary); font-weight:bold">إجمالي اليوم: ${log.total}</div>
             </div>`;
         });
     }
     function closeAnalytics() { document.getElementById('analyticsOverlay').style.display='none'; }
-    function clearArchive() { if(confirm("حذف كل السجلات التاريخية؟")) { dailyLogs=[]; localStorage.setItem('jard_daily_logs_v5','[]'); openAnalytics(); } }
+    function clearArchive() { if(confirm("حذف كل السجلات التاريخية والرسم البياني؟")) { dailyLogs=[]; localStorage.setItem('jard_daily_logs_v5','[]'); openAnalytics(); } }
 
     function updateTimer() {
         const now = new Date(); const res = new Date(); res.setHours(23,0,0,0); if(now>res) res.setDate(res.getDate()+1);
@@ -372,18 +387,32 @@
     }
 
     function showChart() {
-        const getData = (s) => {
-            let l = [], v = [];
-            document.querySelectorAll(`#tbody${s} tr`).forEach(r => {
-                let n = r.querySelector('.item-input').value, val = parseInt(r.cells[r.cells.length-1].innerText) || 0;
-                if(n) { l.push(n); v.push(val); }
+        const getArchivedData = (sec) => {
+            let totals = {};
+            dailyLogs.forEach(log => {
+                let dataArray = (sec === 1) ? log.compData : log.actData;
+                if(dataArray) {
+                    dataArray.forEach(item => {
+                        totals[item.name] = (totals[item.name] || 0) + item.val;
+                    });
+                }
             });
-            return { l, v };
+            return { labels: Object.keys(totals), values: Object.values(totals) };
         };
+
         if(chartC) chartC.destroy(); if(chartA) chartA.destroy();
-        let dc = getData(1), da = getData(2);
-        chartC = new Chart(document.getElementById('chartComp'), { type: 'bar', data: { labels: dc.l, datasets: [{ label: 'الشركات', data: dc.v, backgroundColor: '#6366f1' }]}, options: { maintainAspectRatio: false }});
-        chartA = new Chart(document.getElementById('chartAct'), { type: 'bar', data: { labels: da.l, datasets: [{ label: 'الأنشطة', data: da.v, backgroundColor: '#fcdf06' }]}, options: { maintainAspectRatio: false }});
+        let dc = getArchivedData(1), da = getArchivedData(2);
+
+        chartC = new Chart(document.getElementById('chartComp'), { 
+            type: 'bar', 
+            data: { labels: dc.labels, datasets: [{ label: 'إجمالي الشركات التراكمي', data: dc.values, backgroundColor: '#6366f1' }]},
+            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#333' } } } }
+        });
+        chartA = new Chart(document.getElementById('chartAct'), { 
+            type: 'bar', 
+            data: { labels: da.labels, datasets: [{ label: 'إجمالي الأنشطة التراكمي', data: da.values, backgroundColor: '#fcdf06' }]},
+            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#333' } } } }
+        });
     }
 </script>
 </body>
